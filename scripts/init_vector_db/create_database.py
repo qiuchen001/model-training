@@ -11,13 +11,8 @@ MILVUS_PORT = os.getenv("MILVUS_PORT")
 MILVUS_URI = f"http://{MILVUS_HOST}:{MILVUS_PORT}"
 
 client = MilvusClient(
-    uri="http://10.66.8.51:19530",
-    token="root:Milvus"
-)
-
-milvus_client = MilvusClient(
     uri=MILVUS_URI,
-    db_name=os.getenv("MILVUS_DB_NAME")
+    token="root:Milvus"
 )
 
 
