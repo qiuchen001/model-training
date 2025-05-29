@@ -17,16 +17,25 @@ MILVUS_HOST = os.getenv("MILVUS_HOST")
 MILVUS_PORT = os.getenv("MILVUS_PORT")
 uri = f"http://{MILVUS_HOST}:{MILVUS_PORT}"
 COLLECTION_NAME = os.getenv("MILVUS_COLLECTION_NAME")
-
-milvus_client = MilvusClient(
-    uri=uri,
-    db_name=os.getenv("MILVUS_DB_NAME")
-)
+DB_NAME = os.getenv("MILVUS_DB_NAME")
 
 
-def _create_collection_schema():
+def get_milvus_client():
+    """
+    获取 Milvus 客户端实例
+    """
+    return MilvusClient(
+        uri=uri,
+        db_name=DB_NAME,
+    )
+
+
+def _create_collection_schema(milvus_client):
     """
     创建视频集合的schema定义。
+
+    Args:
+        milvus_client: Milvus客户端实例
 
     Returns:
         CollectionSchema: Milvus集合的schema对象
@@ -95,11 +104,12 @@ def _create_collection_schema():
     return collection_schema
 
 
-def _create_collection(collection_schema):
+def _create_collection(milvus_client, collection_schema):
     """
     使用指定的schema创建视频集合。
 
     Args:
+        milvus_client: Milvus客户端实例
         collection_schema (CollectionSchema): 集合的schema定义
     """
     milvus_client.create_collection(
@@ -109,11 +119,16 @@ def _create_collection(collection_schema):
 
 
 def create_collection():
+    """
+    创建集合的主函数
+    """
+    milvus_client = get_milvus_client()
     list_collections = milvus_client.list_collections()
     if COLLECTION_NAME in list_collections:
         print("集合已存在")
     else:
-        _create_collection(_create_collection_schema())
+        _create_collection(milvus_client, _create_collection_schema(milvus_client))
+        print(f"集合 {COLLECTION_NAME} 创建成功")
 
 
 if __name__ == "__main__":

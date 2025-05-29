@@ -7,14 +7,24 @@ load_dotenv()
 MILVUS_HOST = os.getenv("MILVUS_HOST")
 MILVUS_PORT = os.getenv("MILVUS_PORT")
 uri = f"http://{MILVUS_HOST}:{MILVUS_PORT}"
-milvus_client = MilvusClient(uri=uri, db_name=os.getenv("MILVUS_DB_NAME"))
 collection_name = os.getenv("MILVUS_COLLECTION_NAME")
+DB_NAME = os.getenv("MILVUS_DB_NAME")
 
 EMBEDDING_INDEX = "embedding_index"
 SUMMARY_EMBEDDING_INDEX = "summary_embedding_index"
 
 
-def _create_index():
+def get_milvus_client():
+    """
+    获取 Milvus 客户端实例
+    """
+    return MilvusClient(
+        uri=uri,
+        db_name=DB_NAME,
+    )
+
+
+def _create_index(milvus_client):
     index_params = MilvusClient.prepare_index_params()
     index_params.add_index(
         field_name="embedding",
@@ -40,6 +50,8 @@ def _create_index():
 
 
 def create_index():
+    milvus_client = get_milvus_client()
+
     list_indexes = milvus_client.list_indexes(
         collection_name=collection_name
     )
@@ -47,7 +59,7 @@ def create_index():
     if EMBEDDING_INDEX in list_indexes and SUMMARY_EMBEDDING_INDEX in list_indexes:
         print(f"索引 {EMBEDDING_INDEX}、{SUMMARY_EMBEDDING_INDEX} 已存在")
     else:
-        _create_index()
+        _create_index(milvus_client)
         # 创建后立即加载集合
         milvus_client.load_collection(
             collection_name=collection_name
